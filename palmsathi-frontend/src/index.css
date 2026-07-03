@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #1B4332;
+  --color-leaf: #40916C;
+  --color-ivory: #F8F4E9;
+  --color-earth: #7C5C3E;
+  --color-offwhite: #FAFAF7;
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #FAFAF7;
+}
+
+.ps-card {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem;
+}
+
+.ps-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-family: "Inter", sans-serif;
+}
+
+.ps-info-box {
+  background-color: #FAFAF7;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  font-family: "Inter", sans-serif;
+}

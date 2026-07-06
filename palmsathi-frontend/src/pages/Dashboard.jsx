@@ -7,6 +7,9 @@ import Navbar from "../components/Navbar";
 import PlotCard from "../components/PlotCard";
 import BatchCard from "../components/BatchCard";
 import MillCard from "../components/MillCard";
+import AdvisoryCard from "../components/AdvisoryCard";
+import YieldEstimator from "../components/YieldEstimator";
+import SubsidyTracker from "../components/SubsidyTracker";
 
 export default function Dashboard() {
     const { farmer } = useAuth();
@@ -43,7 +46,7 @@ export default function Dashboard() {
         try {
             const res = await runMatching();
             setMatchResult(res.data);
-            fetchAll(); // refresh everything after matching
+            fetchAll();
         } finally {
             setMatching(false);
         }
@@ -56,56 +59,91 @@ export default function Dashboard() {
             <div className="max-w-6xl mx-auto px-6 py-8">
 
                 {loading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <p className="text-earth font-body">Loading your farm data...</p>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "16rem" }}>
+                        <p style={{ color: "#7C5C3E", fontFamily: "Inter, sans-serif" }}>Loading your farm data...</p>
                     </div>
                 ) : (
                     <>
                         {/* Plots Section */}
-                        <section className="mb-10">
-                            <h2 className="font-heading font-bold text-xl text-forest mb-1">Your Plots</h2>
-                            <p className="text-earth text-sm font-body mb-4">
-                                Ripeness predictions based on planting year and last harvest
+                        <section style={{ marginBottom: "2.5rem" }}>
+                            <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
+                                Your Plots
+                            </h2>
+                            <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
+                                Ripeness predictions and advisory based on planting year, last harvest and live weather
                             </p>
+
                             {plots.length === 0 ? (
-                                <p className="text-gray-400 text-sm font-body">No plots found.</p>
+                                <p style={{ color: "#9ca3af", fontSize: "0.875rem", fontFamily: "Inter, sans-serif" }}>
+                                    No plots found.
+                                </p>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
                                     {plots.map((plot) => (
-                                        <PlotCard key={plot._id} plot={plot} onHarvested={fetchAll} />
+                                        <div
+                                            key={plot._id}
+                                            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
+                                        >
+                                            <PlotCard plot={plot} onHarvested={fetchAll} />
+                                            <AdvisoryCard plot={plot} />
+                                        </div>
                                     ))}
                                 </div>
                             )}
                         </section>
 
+                        {/* Yield Estimator Section */}
+                        <section style={{ marginBottom: "2.5rem" }}>
+                            <YieldEstimator plots={plots} mills={mills} />
+                        </section>
+
+                        {/* Subsidy Tracker Section */}
+                        <section style={{ marginBottom: "2.5rem" }}>
+                            <SubsidyTracker plots={plots} />
+                        </section>
+
                         {/* Pending Batches Section */}
                         {batches.length > 0 && (
-                            <section className="mb-10">
-                                <div className="flex items-center justify-between mb-1">
+                            <section style={{ marginBottom: "2.5rem" }}>
+                                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
                                     <div>
-                                        <h2 className="font-heading font-bold text-xl text-forest">Pending Batches</h2>
-                                        <p className="text-earth text-sm font-body mt-0.5 mb-4">
+                                        <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
+                                            Pending Batches
+                                        </h2>
+                                        <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif" }}>
                                             Live freshness scores — book a mill slot before quality drops
                                         </p>
                                     </div>
                                     <button
                                         onClick={handleRunMatching}
                                         disabled={matching}
-                                        className="bg-forest hover:bg-leaf text-white font-heading font-semibold px-5 py-2.5 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm"
+                                        style={{
+                                            backgroundColor: "#1B4332",
+                                            color: "white",
+                                            fontFamily: "Poppins, sans-serif",
+                                            fontWeight: 600,
+                                            fontSize: "0.875rem",
+                                            padding: "0.625rem 1.25rem",
+                                            borderRadius: "0.5rem",
+                                            border: "none",
+                                            cursor: "pointer",
+                                            opacity: matching ? 0.6 : 1,
+                                            whiteSpace: "nowrap",
+                                        }}
                                     >
                                         {matching ? "Matching..." : "⚡ Run Matching Engine"}
                                     </button>
                                 </div>
 
                                 {matchResult && (
-                                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4 text-sm font-body text-green-700">
+                                    <div style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "0.5rem", padding: "0.75rem 1rem", marginBottom: "1rem", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", color: "#166534" }}>
                                         Matching complete — {matchResult.assignments.length} batch
                                         {matchResult.assignments.length !== 1 ? "es" : ""} assigned,{" "}
                                         {matchResult.unassigned.length} unassignable (too old).
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
                                     {batches.map((batch) => (
                                         <BatchCard key={batch._id} batch={batch} />
                                     ))}
@@ -114,12 +152,14 @@ export default function Dashboard() {
                         )}
 
                         {/* Mills Section */}
-                        <section className="mb-10">
-                            <h2 className="font-heading font-bold text-xl text-forest mb-1">Nearby Mills</h2>
-                            <p className="text-earth text-sm font-body mb-4">
+                        <section style={{ marginBottom: "2.5rem" }}>
+                            <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
+                                Nearby Mills
+                            </h2>
+                            <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
                                 Today's prices vs government minimum (NMEO-OP) and available slots
                             </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                                 {mills.map((mill) => (
                                     <MillCard key={mill._id} mill={mill} />
                                 ))}
@@ -129,21 +169,24 @@ export default function Dashboard() {
                         {/* Confirmed Bookings Section */}
                         {bookings.length > 0 && (
                             <section>
-                                <h2 className="font-heading font-bold text-xl text-forest mb-1">Confirmed Bookings</h2>
-                                <p className="text-earth text-sm font-body mb-4">
+                                <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
+                                    Confirmed Bookings
+                                </h2>
+                                <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
                                     Your assigned mill slots
                                 </p>
-                                <div className="space-y-3">
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                                     {bookings.map((b) => (
                                         <div
                                             key={b._id}
-                                            className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 flex items-center justify-between"
+                                            className="ps-card"
+                                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                                         >
                                             <div>
-                                                <p className="font-heading font-semibold text-forest text-sm">
+                                                <p style={{ fontFamily: "Poppins, sans-serif", fontWeight: 600, color: "#1B4332", fontSize: "0.875rem" }}>
                                                     {b.millId?.name || "Mill"}
                                                 </p>
-                                                <p className="text-earth text-xs font-body mt-0.5">
+                                                <p style={{ fontFamily: "Inter, sans-serif", color: "#7C5C3E", fontSize: "0.75rem", marginTop: "0.125rem" }}>
                                                     {b.quantityKg} kg ·{" "}
                                                     {new Date(b.slotTime).toLocaleString("en-IN", {
                                                         day: "numeric", month: "short",
@@ -151,11 +194,18 @@ export default function Dashboard() {
                                                     })}
                                                 </p>
                                             </div>
-                                            <div className="text-right">
-                                                <span className="text-xs bg-green-100 text-green-700 font-body px-2 py-1 rounded-full">
+                                            <div style={{ textAlign: "right" }}>
+                                                <span style={{
+                                                    fontSize: "0.75rem",
+                                                    fontFamily: "Inter, sans-serif",
+                                                    padding: "0.25rem 0.625rem",
+                                                    borderRadius: "9999px",
+                                                    backgroundColor: "#dcfce7",
+                                                    color: "#166534",
+                                                }}>
                                                     {b.status}
                                                 </span>
-                                                <p className="text-xs text-earth font-body mt-1">
+                                                <p style={{ fontSize: "0.75rem", color: "#7C5C3E", fontFamily: "Inter, sans-serif", marginTop: "0.25rem" }}>
                                                     Freshness at booking: {b.freshnessAtAssignment}
                                                 </p>
                                             </div>

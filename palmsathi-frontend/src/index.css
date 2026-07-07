@@ -1,46 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap');
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-forest: #1B4332;
-  --color-leaf: #40916C;
-  --color-ivory: #F8F4E9;
-  --color-earth: #7C5C3E;
-  --color-offwhite: #FAFAF7;
-  --font-heading: "Poppins", sans-serif;
-  --font-body: "Inter", sans-serif;
-}
+@layer base {
+  :root {
+    --background: 60 30% 98%;
+    --foreground: 150 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 40% 10%;
+    --primary: 150 45% 16%;
+    --primary-foreground: 60 30% 98%;
+    --secondary: 150 35% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 150 10% 94%;
+    --muted-foreground: 150 10% 45%;
+    --accent: 150 20% 92%;
+    --accent-foreground: 150 45% 16%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 10% 90%;
+    --input: 150 10% 90%;
+    --ring: 150 35% 40%;
+    --radius: 0.75rem;
+  }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+  * {
+    @apply border-border;
+  }
 
-body {
-  font-family: "Inter", sans-serif;
-  background-color: #FAFAF7;
-}
-
-.ps-card {
-  background: white;
-  border-radius: 0.75rem;
-  border: 1px solid #f3f4f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  padding: 1.25rem;
-}
-
-.ps-badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-family: "Inter", sans-serif;
-}
-
-.ps-info-box {
-  background-color: #FAFAF7;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  font-size: 0.75rem;
-  font-family: "Inter", sans-serif;
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
 }

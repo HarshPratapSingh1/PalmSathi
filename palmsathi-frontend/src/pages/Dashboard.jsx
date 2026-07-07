@@ -1,15 +1,26 @@
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "../context/AuthContext";
-import { getMyPlots } from "../api/plots";
-import { getPendingBatches } from "../api/harvest";
-import { getMills, runMatching, getBookings } from "../api/mills";
-import Navbar from "../components/Navbar";
-import PlotCard from "../components/PlotCard";
-import BatchCard from "../components/BatchCard";
-import MillCard from "../components/MillCard";
-import AdvisoryCard from "../components/AdvisoryCard";
-import YieldEstimator from "../components/YieldEstimator";
-import SubsidyTracker from "../components/SubsidyTracker";
+import { useAuth } from "@/context/AuthContext";
+import { getMyPlots } from "@/api/plots";
+import { getPendingBatches } from "@/api/harvest";
+import { getMills, runMatching, getBookings, getWallet } from "@/api/mills";
+import Sidebar from "@/components/layout/Sidebar";
+import PlotCard from "@/components/modules/PlotCard";
+import AdvisoryCard from "@/components/modules/AdvisoryCard";
+import BatchCard from "@/components/modules/BatchCard";
+import MillCard from "@/components/modules/MillCard";
+import AddPlotModal from "@/components/modules/AddPlotModal";
+import HinglishChatbot from "@/components/HinglishChatbot";
+import YieldEstimator from "@/components/YieldEstimator";
+import SubsidyTracker from "@/components/SubsidyTracker";
+import IncentiveWallet from "@/components/IncentiveWallet";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Sprout, Building2, Zap, TrendingUp,
+    Plus, CheckCircle, AlertCircle
+} from "lucide-react";
 
 export default function Dashboard() {
     const { farmer } = useAuth();
@@ -17,22 +28,27 @@ export default function Dashboard() {
     const [batches, setBatches] = useState([]);
     const [mills, setMills] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [wallet, setWallet] = useState(null);
     const [matching, setMatching] = useState(false);
     const [matchResult, setMatchResult] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showAddPlot, setShowAddPlot] = useState(false);
+    const [activeTab, setActiveTab] = useState("overview");
 
     const fetchAll = useCallback(async () => {
         try {
-            const [plotsRes, batchesRes, millsRes, bookingsRes] = await Promise.all([
+            const [plotsRes, batchesRes, millsRes, bookingsRes, walletRes] = await Promise.all([
                 getMyPlots(farmer.id),
                 getPendingBatches(),
                 getMills(),
                 getBookings(),
+                getWallet(),
             ]);
             setPlots(plotsRes.data);
             setBatches(batchesRes.data);
             setMills(millsRes.data);
             setBookings(bookingsRes.data);
+            setWallet(walletRes.data);
         } finally {
             setLoading(false);
         }
@@ -52,171 +68,276 @@ export default function Dashboard() {
         }
     }
 
+    const stats = [
+        { label: "My Plots", value: plots.length, icon: Sprout, color: "text-leaf", bg: "bg-leaf/10" },
+        { label: "Pending Batches", value: batches.length, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50" },
+        { label: "Confirmed Bookings", value: bookings.length, icon: CheckCircle, color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Wallet Points", value: wallet?.totalPoints || 0, icon: TrendingUp, color: "text-yellow-600", bg: "bg-yellow-50" },
+    ];
+
     return (
-        <div className="min-h-screen bg-offwhite">
-            <Navbar />
+        <div className="flex min-h-screen bg-background">
+            <Sidebar activeTab={activeTab} onTabChange={setActiveTab} walletPoints={wallet?.totalPoints || 0} />
 
-            <div className="max-w-6xl mx-auto px-6 py-8">
-
+            <main className="ml-64 flex-1 p-8">
                 {loading ? (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "16rem" }}>
-                        <p style={{ color: "#7C5C3E", fontFamily: "Inter, sans-serif" }}>Loading your farm data...</p>
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+                        </div>
+                        <Skeleton className="h-64 rounded-xl" />
+                        <Skeleton className="h-48 rounded-xl" />
                     </div>
                 ) : (
-                    <>
-                        {/* Plots Section */}
-                        <section style={{ marginBottom: "2.5rem" }}>
-                            <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
-                                Your Plots
-                            </h2>
-                            <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
-                                Ripeness predictions and advisory based on planting year, last harvest and live weather
+                    <div className="space-y-8">
+
+                        {/* Header */}
+                        <div>
+                            <h1 className="font-heading font-bold text-2xl text-forest">
+                                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {farmer?.name?.split(" ")[0]} 👋
+                            </h1>
+                            <p className="font-body text-muted-foreground text-sm mt-1">
+                                Here's what's happening on your farm today.
                             </p>
+                        </div>
 
-                            {plots.length === 0 ? (
-                                <p style={{ color: "#9ca3af", fontSize: "0.875rem", fontFamily: "Inter, sans-serif" }}>
-                                    No plots found.
-                                </p>
-                            ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                                    {plots.map((plot) => (
-                                        <div
-                                            key={plot._id}
-                                            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
-                                        >
-                                            <PlotCard plot={plot} onHarvested={fetchAll} />
-                                            <AdvisoryCard plot={plot} />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </section>
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {stats.map((stat) => {
+                                const Icon = stat.icon;
+                                return (
+                                    <Card key={stat.label} className="hover:shadow-md transition-shadow">
+                                        <CardContent className="p-5">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center`}>
+                                                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                                                </div>
+                                            </div>
+                                            <p className="font-heading font-bold text-2xl text-forest">{stat.value}</p>
+                                            <p className="font-body text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
 
-                        {/* Yield Estimator Section */}
-                        <section style={{ marginBottom: "2.5rem" }}>
-                            <YieldEstimator plots={plots} mills={mills} />
-                        </section>
+                        {/* Overview Tab */}
+                        {activeTab === "overview" && (
+                            <div className="space-y-6">
+                                {/* Pending batches alert */}
+                                {batches.length > 0 && (
+                                    <Card className="border-amber-200 bg-amber-50">
+                                        <CardContent className="p-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                                                    <div>
+                                                        <p className="font-heading font-semibold text-amber-800 text-sm">
+                                                            {batches.length} batch{batches.length > 1 ? "es" : ""} awaiting mill assignment
+                                                        </p>
+                                                        <p className="font-body text-xs text-amber-700">Run the matching engine to assign mill slots before freshness drops</p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    onClick={handleRunMatching}
+                                                    disabled={matching}
+                                                    size="sm"
+                                                    className="bg-amber-600 hover:bg-amber-700 shrink-0"
+                                                >
+                                                    <Zap className="h-3.5 w-3.5 mr-1.5" />
+                                                    {matching ? "Matching..." : "Run Matching"}
+                                                </Button>
+                                            </div>
+                                            {matchResult && (
+                                                <div className="mt-3 pt-3 border-t border-amber-200 text-xs font-body text-amber-700">
+                                                    ✓ {matchResult.assignments.length} assigned · {matchResult.unassigned.length} unassignable
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                        {/* Subsidy Tracker Section */}
-                        <section style={{ marginBottom: "2.5rem" }}>
-                            <SubsidyTracker plots={plots} />
-                        </section>
-
-                        {/* Pending Batches Section */}
-                        {batches.length > 0 && (
-                            <section style={{ marginBottom: "2.5rem" }}>
-                                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+                                {/* Recent bookings */}
+                                {bookings.length > 0 && (
                                     <div>
-                                        <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
-                                            Pending Batches
-                                        </h2>
-                                        <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif" }}>
-                                            Live freshness scores — book a mill slot before quality drops
-                                        </p>
+                                        <h2 className="font-heading font-semibold text-forest mb-3">Recent Bookings</h2>
+                                        <div className="space-y-2">
+                                            {bookings.slice(0, 3).map((b) => (
+                                                <Card key={b._id}>
+                                                    <CardContent className="p-4 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-forest/10 rounded-lg flex items-center justify-center">
+                                                                <Building2 className="h-4 w-4 text-forest" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-heading font-semibold text-forest text-sm">{b.millId?.name}</p>
+                                                                <p className="font-body text-xs text-muted-foreground">
+                                                                    {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <Badge variant="success">{b.status}</Badge>
+                                                            <p className="text-xs text-muted-foreground font-body mt-1">Freshness: {b.freshnessAtAssignment}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={handleRunMatching}
-                                        disabled={matching}
-                                        style={{
-                                            backgroundColor: "#1B4332",
-                                            color: "white",
-                                            fontFamily: "Poppins, sans-serif",
-                                            fontWeight: 600,
-                                            fontSize: "0.875rem",
-                                            padding: "0.625rem 1.25rem",
-                                            borderRadius: "0.5rem",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            opacity: matching ? 0.6 : 1,
-                                            whiteSpace: "nowrap",
-                                        }}
-                                    >
-                                        {matching ? "Matching..." : "⚡ Run Matching Engine"}
-                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Plots Tab */}
+                        {activeTab === "plots" && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="font-heading font-bold text-xl text-forest">Your Plots</h2>
+                                        <p className="font-body text-sm text-muted-foreground mt-0.5">Ripeness predictions and advisory</p>
+                                    </div>
+                                    <Button onClick={() => setShowAddPlot(true)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add Plot
+                                    </Button>
+                                </div>
+
+                                {plots.length === 0 ? (
+                                    <Card className="border-dashed">
+                                        <CardContent className="p-12 text-center">
+                                            <Sprout className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                                            <h3 className="font-heading font-semibold text-forest mb-1">No plots yet</h3>
+                                            <p className="font-body text-sm text-muted-foreground mb-4">Add your first oil palm plot to get started</p>
+                                            <Button onClick={() => setShowAddPlot(true)}>
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Add Plot
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {plots.map((plot) => (
+                                            <div key={plot._id} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                <PlotCard plot={plot} onHarvested={fetchAll} />
+                                                <AdvisoryCard plot={plot} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Harvest & Booking Tab */}
+                        {activeTab === "harvest" && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="font-heading font-bold text-xl text-forest">Harvest & Booking</h2>
+                                        <p className="font-body text-sm text-muted-foreground mt-0.5">Live freshness scores and mill slot assignments</p>
+                                    </div>
+                                    {batches.length > 0 && (
+                                        <Button onClick={handleRunMatching} disabled={matching}>
+                                            <Zap className="h-4 w-4 mr-2" />
+                                            {matching ? "Matching..." : "Run Matching Engine"}
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {matchResult && (
-                                    <div style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "0.5rem", padding: "0.75rem 1rem", marginBottom: "1rem", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", color: "#166534" }}>
-                                        Matching complete — {matchResult.assignments.length} batch
-                                        {matchResult.assignments.length !== 1 ? "es" : ""} assigned,{" "}
-                                        {matchResult.unassigned.length} unassignable (too old).
+                                    <Card className="border-green-200 bg-green-50">
+                                        <CardContent className="p-4 text-sm font-body text-green-700">
+                                            ✓ Matching complete — {matchResult.assignments.length} assigned, {matchResult.unassigned.length} unassignable
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {batches.length === 0 ? (
+                                    <Card className="border-dashed">
+                                        <CardContent className="p-12 text-center">
+                                            <p className="font-body text-muted-foreground">No pending batches. Mark a plot as harvested to get started.</p>
+                                        </CardContent>
+                                    </Card>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {batches.map((batch) => <BatchCard key={batch._id} batch={batch} />)}
                                     </div>
                                 )}
 
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
-                                    {batches.map((batch) => (
-                                        <BatchCard key={batch._id} batch={batch} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Mills Section */}
-                        <section style={{ marginBottom: "2.5rem" }}>
-                            <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
-                                Nearby Mills
-                            </h2>
-                            <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
-                                Today's prices vs government minimum (NMEO-OP) and available slots
-                            </p>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                                {mills.map((mill) => (
-                                    <MillCard key={mill._id} mill={mill} />
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Confirmed Bookings Section */}
-                        {bookings.length > 0 && (
-                            <section>
-                                <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "1.25rem", color: "#1B4332", marginBottom: "0.25rem" }}>
-                                    Confirmed Bookings
-                                </h2>
-                                <p style={{ color: "#7C5C3E", fontSize: "0.875rem", fontFamily: "Inter, sans-serif", marginBottom: "1rem" }}>
-                                    Your assigned mill slots
-                                </p>
-                                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                                    {bookings.map((b) => (
-                                        <div
-                                            key={b._id}
-                                            className="ps-card"
-                                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-                                        >
-                                            <div>
-                                                <p style={{ fontFamily: "Poppins, sans-serif", fontWeight: 600, color: "#1B4332", fontSize: "0.875rem" }}>
-                                                    {b.millId?.name || "Mill"}
-                                                </p>
-                                                <p style={{ fontFamily: "Inter, sans-serif", color: "#7C5C3E", fontSize: "0.75rem", marginTop: "0.125rem" }}>
-                                                    {b.quantityKg} kg ·{" "}
-                                                    {new Date(b.slotTime).toLocaleString("en-IN", {
-                                                        day: "numeric", month: "short",
-                                                        hour: "2-digit", minute: "2-digit", hour12: true,
-                                                    })}
-                                                </p>
-                                            </div>
-                                            <div style={{ textAlign: "right" }}>
-                                                <span style={{
-                                                    fontSize: "0.75rem",
-                                                    fontFamily: "Inter, sans-serif",
-                                                    padding: "0.25rem 0.625rem",
-                                                    borderRadius: "9999px",
-                                                    backgroundColor: "#dcfce7",
-                                                    color: "#166534",
-                                                }}>
-                                                    {b.status}
-                                                </span>
-                                                <p style={{ fontSize: "0.75rem", color: "#7C5C3E", fontFamily: "Inter, sans-serif", marginTop: "0.25rem" }}>
-                                                    Freshness at booking: {b.freshnessAtAssignment}
-                                                </p>
-                                            </div>
+                                {bookings.length > 0 && (
+                                    <div>
+                                        <h3 className="font-heading font-semibold text-forest mb-3">Confirmed Bookings</h3>
+                                        <div className="space-y-2">
+                                            {bookings.map((b) => (
+                                                <Card key={b._id}>
+                                                    <CardContent className="p-4 flex items-center justify-between">
+                                                        <div>
+                                                            <p className="font-heading font-semibold text-forest text-sm">{b.millId?.name}</p>
+                                                            <p className="font-body text-xs text-muted-foreground">
+                                                                {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <Badge variant="success">{b.status}</Badge>
+                                                            <p className="text-xs text-muted-foreground font-body mt-1">Freshness: {b.freshnessAtAssignment}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </section>
+                                    </div>
+                                )}
+
+                                <YieldEstimator plots={plots} mills={mills} />
+                            </div>
                         )}
-                    </>
+
+                        {/* Mills Tab */}
+                        {activeTab === "mills" && (
+                            <div className="space-y-6">
+                                <div>
+                                    <h2 className="font-heading font-bold text-xl text-forest">Nearby Mills</h2>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Today's prices vs NMEO-OP minimum and available slots</p>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {mills.map((mill) => <MillCard key={mill._id} mill={mill} />)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Subsidies Tab */}
+                        {activeTab === "subsidies" && (
+                            <div className="space-y-6">
+                                <div>
+                                    <h2 className="font-heading font-bold text-xl text-forest">Subsidy & DBT Tracker</h2>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Track your NMEO-OP claims from application to disbursement</p>
+                                </div>
+                                <SubsidyTracker plots={plots} />
+                            </div>
+                        )}
+
+                        {/* Wallet Tab */}
+                        {activeTab === "wallet" && (
+                            <div className="space-y-6">
+                                <div>
+                                    <h2 className="font-heading font-bold text-xl text-forest">Incentive Wallet</h2>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Earn points for good practices and redeem for rewards</p>
+                                </div>
+                                <IncentiveWallet />
+                            </div>
+                        )}
+
+                    </div>
                 )}
-            </div>
+            </main>
+
+            <AddPlotModal
+                open={showAddPlot}
+                onClose={() => setShowAddPlot(false)}
+                onPlotAdded={fetchAll}
+            />
+
+            <HinglishChatbot />
         </div>
     );
 }

@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
 import HarvestBatch from "../models/HarvestBatch.js";
 import Mill from "../models/Mill.js";
 import Booking from "../models/Booking.js";
 import { runMatching } from "../services/matchingEngine.js";
+import { awardPoints } from "../services/walletService.js";
 
 const ENGINE_OPTIONS = {
   minFreshnessThreshold: Number(process.env.MIN_FRESHNESS_THRESHOLD || 70),
@@ -55,6 +55,13 @@ export async function runMatchingPass(req, res) {
         { _id: a.millId, "slots._id": a.slotId },
         { $inc: { "slots.$.remainingKg": -a.quantityKg } }
       );
+
+      if (a.freshnessAtAssignment >= 85) {
+        const batch = await HarvestBatch.findById(a.batchId);
+        if (batch) {
+          await awardPoints(batch.farmerId.toString(), 30, "Booked mill slot with freshness above 85");
+        }
+      }
     }
 
     for (const u of unassigned) {
@@ -78,8 +85,14 @@ export async function runMatchingPass(req, res) {
 }
 
 export async function listBookings(req, res) {
-  const bookings = await Booking.find()
+  const bookings = await Booking.find({})
     .populate({ path: "batchId", populate: { path: "plotId" } })
     .populate("millId");
-  res.json(bookings);
+
+  // Filter to only show bookings belonging to the logged-in farmer
+  const myBookings = bookings.filter(b =>
+    b.batchId?.farmerId?.toString() === req.farmer.id
+  );
+
+  res.json(myBookings);
 }

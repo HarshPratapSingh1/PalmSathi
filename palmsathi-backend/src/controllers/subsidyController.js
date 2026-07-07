@@ -1,5 +1,6 @@
 import SubsidyClaim from "../models/SubsidyClaim.js";
 import Plot from "../models/Plot.js";
+import { awardPoints } from "../services/walletService.js";
 
 const SCHEME_LABELS = {
     planting_material: "Planting Material Subsidy",
@@ -30,7 +31,6 @@ export async function fileClaim(req, res) {
             return res.status(400).json({ error: `Maximum claimable amount for this scheme is ₹${maxAmount}.` });
         }
 
-        // Check for duplicate active claim
         const existing = await SubsidyClaim.findOne({
             farmerId,
             plotId,
@@ -50,6 +50,8 @@ export async function fileClaim(req, res) {
             description,
         });
 
+        await awardPoints(farmerId, 20, `Filed ${SCHEME_LABELS[schemeType]} claim`);
+
         res.status(201).json(claim);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -67,7 +69,6 @@ export async function getMyClaims(req, res) {
     }
 }
 
-// Admin only - update claim status
 export async function updateClaimStatus(req, res) {
     try {
         const { status } = req.body;
@@ -79,6 +80,11 @@ export async function updateClaimStatus(req, res) {
         if (status === "disbursed") claim.disbursedAt = new Date();
 
         await claim.save();
+
+        if (status === "disbursed") {
+            await awardPoints(claim.farmerId.toString(), 50, "Subsidy claim disbursed");
+        }
+
         res.json(claim);
     } catch (err) {
         res.status(500).json({ error: err.message });

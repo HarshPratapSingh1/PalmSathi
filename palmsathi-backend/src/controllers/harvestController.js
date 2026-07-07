@@ -1,6 +1,7 @@
 import HarvestBatch from "../models/HarvestBatch.js";
 import Plot from "../models/Plot.js";
 import { freshnessScoreFromDate } from "../utils/freshness.js";
+import { awardPoints } from "../services/walletService.js";
 
 export async function markHarvested(req, res) {
   try {
@@ -18,6 +19,8 @@ export async function markHarvested(req, res) {
 
     plot.lastHarvestDate = batch.harvestedAt;
     await plot.save();
+
+    await awardPoints(plot.farmerId.toString(), 50, "Marked plot as harvested");
 
     res.status(201).json(batch);
   } catch (err) {

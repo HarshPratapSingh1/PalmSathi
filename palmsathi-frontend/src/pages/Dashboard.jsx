@@ -77,7 +77,11 @@ export default function Dashboard() {
 
     return (
         <div className="flex min-h-screen bg-background">
-            <Sidebar activeTab={activeTab} onTabChange={setActiveTab} walletPoints={wallet?.totalPoints || 0} />
+            <Sidebar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                walletPoints={wallet?.totalPoints || 0}
+            />
 
             <main className="ml-64 flex-1 p-8">
                 {loading ? (
@@ -91,51 +95,56 @@ export default function Dashboard() {
                 ) : (
                     <div className="space-y-8">
 
-                        {/* Header */}
-                        <div>
-                            <h1 className="font-heading font-bold text-2xl text-forest">
-                                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {farmer?.name?.split(" ")[0]} 👋
-                            </h1>
-                            <p className="font-body text-muted-foreground text-sm mt-1">
-                                Here's what's happening on your farm today.
-                            </p>
-                        </div>
+                        {/* Header — hidden on chatbot tab */}
+                        {activeTab !== "chatbot" && (
+                            <div>
+                                <h1 className="font-heading font-bold text-2xl text-forest">
+                                    Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {farmer?.name?.split(" ")[0]} 👋
+                                </h1>
+                                <p className="font-body text-muted-foreground text-sm mt-1">
+                                    Here's what's happening on your farm today.
+                                </p>
+                            </div>
+                        )}
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            {stats.map((stat) => {
-                                const Icon = stat.icon;
-                                return (
-                                    <Card key={stat.label} className="hover:shadow-md transition-shadow">
-                                        <CardContent className="p-5">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center`}>
-                                                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                        {/* Stats — hidden on chatbot tab */}
+                        {activeTab !== "chatbot" && (
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                {stats.map((stat) => {
+                                    const Icon = stat.icon;
+                                    return (
+                                        <Card key={stat.label} className="hover:shadow-md transition-shadow cursor-pointer">
+                                            <CardContent className="p-5">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center`}>
+                                                        <Icon className={`h-4 w-4 ${stat.color}`} />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <p className="font-heading font-bold text-2xl text-forest">{stat.value}</p>
-                                            <p className="font-body text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
+                                                <p className="font-heading font-bold text-2xl text-forest">{stat.value}</p>
+                                                <p className="font-body text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                         {/* Overview Tab */}
                         {activeTab === "overview" && (
                             <div className="space-y-6">
-                                {/* Pending batches alert */}
                                 {batches.length > 0 && (
                                     <Card className="border-amber-200 bg-amber-50">
                                         <CardContent className="p-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                                                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
                                                     <div>
                                                         <p className="font-heading font-semibold text-amber-800 text-sm">
                                                             {batches.length} batch{batches.length > 1 ? "es" : ""} awaiting mill assignment
                                                         </p>
-                                                        <p className="font-body text-xs text-amber-700">Run the matching engine to assign mill slots before freshness drops</p>
+                                                        <p className="font-body text-xs text-amber-700">
+                                                            Run the matching engine before freshness drops
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <Button
@@ -157,7 +166,6 @@ export default function Dashboard() {
                                     </Card>
                                 )}
 
-                                {/* Recent bookings */}
                                 {bookings.length > 0 && (
                                     <div>
                                         <h2 className="font-heading font-semibold text-forest mb-3">Recent Bookings</h2>
@@ -172,19 +180,41 @@ export default function Dashboard() {
                                                             <div>
                                                                 <p className="font-heading font-semibold text-forest text-sm">{b.millId?.name}</p>
                                                                 <p className="font-body text-xs text-muted-foreground">
-                                                                    {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
+                                                                    {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", {
+                                                                        day: "numeric", month: "short",
+                                                                        hour: "2-digit", minute: "2-digit",
+                                                                        hour12: true, timeZone: "Asia/Kolkata"
+                                                                    })}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
                                                             <Badge variant="success">{b.status}</Badge>
-                                                            <p className="text-xs text-muted-foreground font-body mt-1">Freshness: {b.freshnessAtAssignment}</p>
+                                                            <p className="text-xs text-muted-foreground font-body mt-1">
+                                                                Freshness: {b.freshnessAtAssignment}
+                                                            </p>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
                                             ))}
                                         </div>
                                     </div>
+                                )}
+
+                                {plots.length === 0 && (
+                                    <Card className="border-dashed">
+                                        <CardContent className="p-12 text-center">
+                                            <Sprout className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                                            <h3 className="font-heading font-semibold text-forest mb-1">No plots yet</h3>
+                                            <p className="font-body text-sm text-muted-foreground mb-4">
+                                                Add your first oil palm plot to get started
+                                            </p>
+                                            <Button onClick={() => { setActiveTab("plots"); setShowAddPlot(true); }}>
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Add Plot
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
                                 )}
                             </div>
                         )}
@@ -195,7 +225,9 @@ export default function Dashboard() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="font-heading font-bold text-xl text-forest">Your Plots</h2>
-                                        <p className="font-body text-sm text-muted-foreground mt-0.5">Ripeness predictions and advisory</p>
+                                        <p className="font-body text-sm text-muted-foreground mt-0.5">
+                                            Ripeness predictions and live weather advisory
+                                        </p>
                                     </div>
                                     <Button onClick={() => setShowAddPlot(true)}>
                                         <Plus className="h-4 w-4 mr-2" />
@@ -208,7 +240,9 @@ export default function Dashboard() {
                                         <CardContent className="p-12 text-center">
                                             <Sprout className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
                                             <h3 className="font-heading font-semibold text-forest mb-1">No plots yet</h3>
-                                            <p className="font-body text-sm text-muted-foreground mb-4">Add your first oil palm plot to get started</p>
+                                            <p className="font-body text-sm text-muted-foreground mb-4">
+                                                Add your first oil palm plot to get started
+                                            </p>
                                             <Button onClick={() => setShowAddPlot(true)}>
                                                 <Plus className="h-4 w-4 mr-2" />
                                                 Add Plot
@@ -234,7 +268,9 @@ export default function Dashboard() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="font-heading font-bold text-xl text-forest">Harvest & Booking</h2>
-                                        <p className="font-body text-sm text-muted-foreground mt-0.5">Live freshness scores and mill slot assignments</p>
+                                        <p className="font-body text-sm text-muted-foreground mt-0.5">
+                                            Live freshness scores and mill slot assignments
+                                        </p>
                                     </div>
                                     {batches.length > 0 && (
                                         <Button onClick={handleRunMatching} disabled={matching}>
@@ -247,7 +283,8 @@ export default function Dashboard() {
                                 {matchResult && (
                                     <Card className="border-green-200 bg-green-50">
                                         <CardContent className="p-4 text-sm font-body text-green-700">
-                                            ✓ Matching complete — {matchResult.assignments.length} assigned, {matchResult.unassigned.length} unassignable
+                                            ✓ Matching complete — {matchResult.assignments.length} assigned,{" "}
+                                            {matchResult.unassigned.length} unassignable
                                         </CardContent>
                                     </Card>
                                 )}
@@ -255,7 +292,9 @@ export default function Dashboard() {
                                 {batches.length === 0 ? (
                                     <Card className="border-dashed">
                                         <CardContent className="p-12 text-center">
-                                            <p className="font-body text-muted-foreground">No pending batches. Mark a plot as harvested to get started.</p>
+                                            <p className="font-body text-muted-foreground text-sm">
+                                                No pending batches. Mark a plot as harvested to get started.
+                                            </p>
                                         </CardContent>
                                     </Card>
                                 ) : (
@@ -271,15 +310,28 @@ export default function Dashboard() {
                                             {bookings.map((b) => (
                                                 <Card key={b._id}>
                                                     <CardContent className="p-4 flex items-center justify-between">
-                                                        <div>
-                                                            <p className="font-heading font-semibold text-forest text-sm">{b.millId?.name}</p>
-                                                            <p className="font-body text-xs text-muted-foreground">
-                                                                {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
-                                                            </p>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-forest/10 rounded-lg flex items-center justify-center">
+                                                                <Building2 className="h-4 w-4 text-forest" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-heading font-semibold text-forest text-sm">
+                                                                    {b.millId?.name}
+                                                                </p>
+                                                                <p className="font-body text-xs text-muted-foreground">
+                                                                    {b.quantityKg} kg · {new Date(b.slotTime).toLocaleString("en-IN", {
+                                                                        day: "numeric", month: "short",
+                                                                        hour: "2-digit", minute: "2-digit",
+                                                                        hour12: true, timeZone: "Asia/Kolkata"
+                                                                    })}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                         <div className="text-right">
                                                             <Badge variant="success">{b.status}</Badge>
-                                                            <p className="text-xs text-muted-foreground font-body mt-1">Freshness: {b.freshnessAtAssignment}</p>
+                                                            <p className="text-xs text-muted-foreground font-body mt-1">
+                                                                Freshness: {b.freshnessAtAssignment}
+                                                            </p>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
@@ -297,7 +349,9 @@ export default function Dashboard() {
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="font-heading font-bold text-xl text-forest">Nearby Mills</h2>
-                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Today's prices vs NMEO-OP minimum and available slots</p>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">
+                                        Today's prices vs NMEO-OP minimum and available slots
+                                    </p>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     {mills.map((mill) => <MillCard key={mill._id} mill={mill} />)}
@@ -310,7 +364,9 @@ export default function Dashboard() {
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="font-heading font-bold text-xl text-forest">Subsidy & DBT Tracker</h2>
-                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Track your NMEO-OP claims from application to disbursement</p>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">
+                                        Track your NMEO-OP claims from application to disbursement
+                                    </p>
                                 </div>
                                 <SubsidyTracker plots={plots} />
                             </div>
@@ -321,10 +377,17 @@ export default function Dashboard() {
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="font-heading font-bold text-xl text-forest">Incentive Wallet</h2>
-                                    <p className="font-body text-sm text-muted-foreground mt-0.5">Earn points for good practices and redeem for rewards</p>
+                                    <p className="font-body text-sm text-muted-foreground mt-0.5">
+                                        Earn points for good practices and redeem for rewards
+                                    </p>
                                 </div>
                                 <IncentiveWallet />
                             </div>
+                        )}
+
+                        {/* Chatbot Tab — no header, no stats, full height */}
+                        {activeTab === "chatbot" && (
+                            <HinglishChatbot embedded={true} />
                         )}
 
                     </div>
@@ -336,8 +399,6 @@ export default function Dashboard() {
                 onClose={() => setShowAddPlot(false)}
                 onPlotAdded={fetchAll}
             />
-
-            <HinglishChatbot />
         </div>
     );
 }

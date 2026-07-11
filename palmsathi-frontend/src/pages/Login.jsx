@@ -183,6 +183,15 @@ export default function Login() {
                                     Create account
                                 </Link>
                             </p>
+
+                            <p className="text-center mt-4">
+                                <Link
+                                    to="/admin"
+                                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors font-body"
+                                >
+                                    Government Officer Access
+                                </Link>
+                            </p>
                         </CardContent>
                     </Card>
                 </div>

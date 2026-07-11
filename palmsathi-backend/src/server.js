@@ -13,8 +13,9 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import advisoryRoutes from "./routes/advisoryRoutes.js";
 import yieldRoutes from "./routes/yieldRoutes.js";
 import subsidyRoutes from "./routes/subsidyRoutes.js";
-import chatRoutes from "./routes/chatRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));
@@ -22,7 +23,6 @@ app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok", service: "palmsathi-backend" }));
 
-app.use("/api/chat", chatRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/plots", plotRoutes);
 app.use("/api/mills", millRoutes);
@@ -32,6 +32,8 @@ app.use("/api/advisory", advisoryRoutes);
 app.use("/api/yield", yieldRoutes);
 app.use("/api/subsidy", subsidyRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/admin", adminRoutes);
 
 const httpServer = http.createServer(app);
 setupSockets(httpServer, app);

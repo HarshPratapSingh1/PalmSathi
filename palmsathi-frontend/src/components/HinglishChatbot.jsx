@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { sendChatMessage } from "../api/mills";
+import { sendChatMessage } from "@/api/mills";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Send } from "lucide-react";
 
 const SUGGESTED_QUESTIONS = [
     "FFB harvest ke baad kitne ghante mein mill deliver karein?",
@@ -7,9 +10,83 @@ const SUGGESTED_QUESTIONS = [
     "NMEO-OP subsidy ke liye kaise apply karein?",
     "Ganoderma disease ke symptoms kya hain?",
     "Mill price govt minimum se kam ho toh kya karein?",
+    "Oil palm mein drip irrigation kaise lagayein?",
+    "FFB ki quality kaise check karein?",
 ];
 
-export default function HinglishChatbot() {
+function ChatUI({ messages, input, setInput, loading, handleSend, bottomRef, height = "500px" }) {
+    return (
+        <div className="flex flex-col rounded-xl overflow-hidden border border-border bg-white" style={{ height }}>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
+                {messages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                        {msg.role === "assistant" && (
+                            <div className="w-6 h-6 rounded-full bg-leaf/20 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                                🌴
+                            </div>
+                        )}
+                        <div className={`max-w-[75%] px-3 py-2.5 rounded-xl text-sm font-body leading-relaxed ${msg.role === "user"
+                            ? "bg-forest text-white rounded-br-sm"
+                            : "bg-white border border-border text-foreground rounded-bl-sm shadow-sm"
+                            }`}>
+                            {msg.content || (loading && i === messages.length - 1
+                                ? <span className="flex gap-1 items-center py-0.5">
+                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                </span>
+                                : ""
+                            )}
+                        </div>
+                    </div>
+                ))}
+
+                {/* Suggested questions — only at start */}
+                {messages.length === 1 && (
+                    <div className="space-y-2 mt-2">
+                        <p className="text-xs text-muted-foreground font-body font-medium">Suggested questions:</p>
+                        <div className="grid grid-cols-1 gap-1.5">
+                            {SUGGESTED_QUESTIONS.map((q) => (
+                                <button
+                                    key={q}
+                                    onClick={() => handleSend(q)}
+                                    className="w-full text-left text-xs font-body bg-accent/50 text-forest px-3 py-2 rounded-lg hover:bg-leaf/10 transition-colors border border-border/50"
+                                >
+                                    {q}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                <div ref={bottomRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-3 border-t border-border bg-white flex gap-2 shrink-0">
+                <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    placeholder="Kuch bhi poochho..."
+                    disabled={loading}
+                    className="flex-1 text-sm"
+                />
+                <Button
+                    onClick={() => handleSend()}
+                    disabled={loading || !input.trim()}
+                    size="icon"
+                    className="shrink-0"
+                >
+                    <Send className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+export default function HinglishChatbot({ embedded = false }) {
     const [messages, setMessages] = useState([
         {
             role: "assistant",
@@ -18,7 +95,6 @@ export default function HinglishChatbot() {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
     const bottomRef = useRef(null);
 
     useEffect(() => {
@@ -33,8 +109,6 @@ export default function HinglishChatbot() {
         setMessages(newMessages);
         setInput("");
         setLoading(true);
-
-        // Add empty assistant message that will be filled by streaming
         setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
         try {
@@ -53,18 +127,20 @@ export default function HinglishChatbot() {
                 const lines = text.split("\n").filter((l) => l.startsWith("data: "));
 
                 for (const line of lines) {
-                    const data = JSON.parse(line.replace("data: ", ""));
-                    if (data.done) break;
-                    if (data.chunk) {
-                        setMessages((prev) => {
-                            const updated = [...prev];
-                            updated[updated.length - 1] = {
-                                role: "assistant",
-                                content: updated[updated.length - 1].content + data.chunk,
-                            };
-                            return updated;
-                        });
-                    }
+                    try {
+                        const data = JSON.parse(line.replace("data: ", ""));
+                        if (data.done) break;
+                        if (data.chunk) {
+                            setMessages((prev) => {
+                                const updated = [...prev];
+                                updated[updated.length - 1] = {
+                                    role: "assistant",
+                                    content: updated[updated.length - 1].content + data.chunk,
+                                };
+                                return updated;
+                            });
+                        }
+                    } catch (e) { }
                 }
             }
         } catch (err) {
@@ -81,151 +157,19 @@ export default function HinglishChatbot() {
         }
     }
 
-    return (
-        <>
-            {/* Floating button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    position: "fixed",
-                    bottom: "1.5rem",
-                    right: "1.5rem",
-                    width: "56px",
-                    height: "56px",
-                    borderRadius: "50%",
-                    backgroundColor: "#1B4332",
-                    color: "white",
-                    fontSize: "1.5rem",
-                    border: "none",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    zIndex: 1000,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                }}
-            >
-                {isOpen ? "✕" : "🌴"}
-            </button>
+    if (embedded) {
+        return (
+            <ChatUI
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                loading={loading}
+                handleSend={handleSend}
+                bottomRef={bottomRef}
+                height="calc(100vh - 220px)"
+            />
+        );
+    }
 
-            {/* Chat window */}
-            {isOpen && (
-                <div style={{
-                    position: "fixed",
-                    bottom: "5rem",
-                    right: "1.5rem",
-                    width: "360px",
-                    height: "500px",
-                    backgroundColor: "white",
-                    borderRadius: "1rem",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
-                    display: "flex",
-                    flexDirection: "column",
-                    zIndex: 1000,
-                    overflow: "hidden",
-                    border: "1px solid #f3f4f6",
-                }}>
-
-                    {/* Header */}
-                    <div style={{ backgroundColor: "#1B4332", padding: "1rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <span style={{ fontSize: "1.5rem" }}>🌴</span>
-                        <div>
-                            <p style={{ fontFamily: "Poppins, sans-serif", fontWeight: 600, color: "white", fontSize: "0.875rem", margin: 0 }}>
-                                PalmSathi Bot
-                            </p>
-                            <p style={{ fontFamily: "Inter, sans-serif", color: "#40916C", fontSize: "0.7rem", margin: 0 }}>
-                                Oil palm farming advisor • Hinglish
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Messages */}
-                    <div style={{ flex: 1, overflowY: "auto", padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                        {messages.map((msg, i) => (
-                            <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                                <div style={{
-                                    maxWidth: "80%",
-                                    padding: "0.625rem 0.875rem",
-                                    borderRadius: msg.role === "user" ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
-                                    backgroundColor: msg.role === "user" ? "#1B4332" : "#F8F4E9",
-                                    color: msg.role === "user" ? "white" : "#1B4332",
-                                    fontFamily: "Inter, sans-serif",
-                                    fontSize: "0.8rem",
-                                    lineHeight: 1.5,
-                                }}>
-                                    {msg.content || (loading && i === messages.length - 1 ? "..." : "")}
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Suggested questions — show only at start */}
-                        {messages.length === 1 && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
-                                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#9ca3af", marginBottom: "0.25rem" }}>
-                                    Suggested questions:
-                                </p>
-                                {SUGGESTED_QUESTIONS.map((q) => (
-                                    <button
-                                        key={q}
-                                        onClick={() => handleSend(q)}
-                                        style={{
-                                            backgroundColor: "#f0fdf4",
-                                            border: "1px solid #bbf7d0",
-                                            borderRadius: "0.5rem",
-                                            padding: "0.375rem 0.625rem",
-                                            fontFamily: "Inter, sans-serif",
-                                            fontSize: "0.72rem",
-                                            color: "#166534",
-                                            cursor: "pointer",
-                                            textAlign: "left",
-                                        }}
-                                    >
-                                        {q}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        <div ref={bottomRef} />
-                    </div>
-
-                    {/* Input */}
-                    <div style={{ padding: "0.75rem", borderTop: "1px solid #f3f4f6", display: "flex", gap: "0.5rem" }}>
-                        <input
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                            placeholder="Kuch bhi poochho..."
-                            disabled={loading}
-                            style={{
-                                flex: 1,
-                                border: "1px solid #e5e7eb",
-                                borderRadius: "0.5rem",
-                                padding: "0.5rem 0.75rem",
-                                fontSize: "0.8rem",
-                                fontFamily: "Inter, sans-serif",
-                                outline: "none",
-                            }}
-                        />
-                        <button
-                            onClick={() => handleSend()}
-                            disabled={loading || !input.trim()}
-                            style={{
-                                backgroundColor: "#40916C",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "0.5rem",
-                                padding: "0.5rem 0.875rem",
-                                cursor: "pointer",
-                                fontSize: "0.8rem",
-                                fontFamily: "Inter, sans-serif",
-                                opacity: loading || !input.trim() ? 0.6 : 1,
-                            }}
-                        >
-                            Send
-                        </button>
-                    </div>
-                </div>
-            )}
-        </>
-    );
+    return null;
 }

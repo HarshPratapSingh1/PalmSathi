@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
     LayoutDashboard, Sprout, Truck, Building2,
-    FileText, Coins, LogOut, Palmtree
+    FileText, Coins, LogOut, Palmtree, MessageCircle
 } from "lucide-react";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
     { icon: Building2, label: "Mills & Prices", tab: "mills" },
     { icon: FileText, label: "Subsidies", tab: "subsidies" },
     { icon: Coins, label: "Wallet", tab: "wallet" },
+    { icon: MessageCircle, label: "PalmSathi Bot", tab: "chatbot" },
 ];
 
 export default function Sidebar({ activeTab, onTabChange, walletPoints }) {
@@ -62,8 +63,8 @@ export default function Sidebar({ activeTab, onTabChange, walletPoints }) {
                                 key={item.tab}
                                 onClick={() => onTabChange(item.tab)}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors ${isActive
-                                        ? "bg-leaf text-white font-medium"
-                                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                                    ? "bg-leaf text-white font-medium"
+                                    : "text-white/70 hover:bg-white/10 hover:text-white"
                                     }`}
                             >
                                 <Icon className="h-4 w-4 shrink-0" />

@@ -10,7 +10,7 @@ export const getMyClaims = () => API.get("/subsidy/my-claims");
 export const getWallet = () => API.get("/wallet");
 export const redeemPoints = (points, reason) => API.post("/wallet/redeem", { points, reason });
 export const sendChatMessage = (messages) =>
-    fetch("http://localhost:5000/api/chat", {
+    fetch(`${import.meta.env.VITE_API_URL}/chat`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

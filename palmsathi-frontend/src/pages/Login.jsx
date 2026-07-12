@@ -54,10 +54,10 @@ export default function Login() {
         <div className="min-h-screen grid lg:grid-cols-2">
             {/* Left panel */}
             <div className="hidden lg:flex flex-col bg-forest p-12 text-white">
-                <div className="flex items-center gap-2 mb-auto">
+                <Link to="/" className="flex items-center gap-2 mb-auto w-fit">
                     <Palmtree className="h-7 w-7 text-leaf" />
                     <span className="font-heading font-bold text-2xl">PalmSathi</span>
-                </div>
+                </Link>
 
                 <div className="my-auto">
                     <div className="w-48 h-48 mx-auto mb-8 relative">
@@ -98,10 +98,10 @@ export default function Login() {
             {/* Right panel */}
             <div className="flex items-center justify-center p-8 bg-background">
                 <div className="w-full max-w-sm">
-                    <div className="flex items-center gap-2 mb-8 lg:hidden">
+                    <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden w-fit">
                         <Palmtree className="h-6 w-6 text-leaf" />
                         <span className="font-heading font-bold text-xl text-forest">PalmSathi</span>
-                    </div>
+                    </Link>
 
                     {location.state?.registered && (
                         <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-6 font-body">

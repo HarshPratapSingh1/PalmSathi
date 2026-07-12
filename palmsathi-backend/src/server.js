@@ -1,4 +1,5 @@
 import "dotenv/config";
+import dns from "dns";
 import express from "express";
 import cors from "cors";
 import http from "http";
@@ -17,6 +18,12 @@ import subsidyRoutes from "./routes/subsidyRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+
+// Force Node to use public DNS servers to work around local network/router
+// DNS resolvers that fail on MongoDB SRV lookups (dev-only workaround)
+if (process.env.NODE_ENV !== "production") {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+}
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));

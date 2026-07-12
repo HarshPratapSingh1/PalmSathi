@@ -160,6 +160,17 @@ export default function Landing() {
         .cta-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px 28px; font-size: 15px; font-weight: 500; font-family: Inter,sans-serif; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
         .cta-secondary:hover { background: rgba(255,255,255,0.18); }
         .leaf-bg { position: absolute; border-radius: 50% 0 50% 0; opacity: 0.06; background: #52B788; pointer-events: none; }
+
+        @media (max-width: 900px) {
+          .nav-links-desktop { display: none !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; text-align: center; }
+          .hero-grid .hero-stats { justify-content: center !important; }
+          .hero-grid .hero-ctas { justify-content: center !important; }
+          .problem-grid, .features-grid, .stats-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (min-width: 901px) and (max-width: 1100px) {
+          .features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
       `}</style>
 
       {/* NAV */}
@@ -169,9 +180,11 @@ export default function Landing() {
           <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: "18px", color: "white" }}>PalmSathi</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
-          <a href="#features" className="nav-link">Features</a>
-          <a href="#how-it-works" className="nav-link">How it works</a>
-          <a href="#problem" className="nav-link">The problem</a>
+          <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+            <a href="#features" className="nav-link">Features</a>
+            <a href="#how-it-works" className="nav-link">How it works</a>
+            <a href="#problem" className="nav-link">The problem</a>
+          </div>
           <Link to="/login" style={{ background: "#40916C", color: "white", padding: "8px 18px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, fontFamily: "Poppins,sans-serif", textDecoration: "none" }}>Log in</Link>
         </div>
       </nav>
@@ -184,7 +197,7 @@ export default function Landing() {
         <div style={{ position: "absolute", top: "20%", right: "8%", width: "2px", height: "120px", background: "linear-gradient(to bottom, transparent, rgba(64,145,108,0.4), transparent)", borderRadius: "1px" }} />
         <div style={{ position: "absolute", top: "60%", right: "18%", width: "2px", height: "80px", background: "linear-gradient(to bottom, transparent, rgba(64,145,108,0.3), transparent)", borderRadius: "1px" }} />
 
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "4rem 2rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", width: "100%" }}>
+        <div className="hero-grid" style={{ maxWidth: "1200px", margin: "0 auto", padding: "4rem 2rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", width: "100%" }}>
           {/* Left */}
           <div>
             <div className="fade-up" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(64,145,108,0.2)", border: "1px solid rgba(64,145,108,0.4)", borderRadius: "9999px", padding: "6px 14px", marginBottom: "1.5rem" }}>
@@ -201,7 +214,7 @@ export default function Landing() {
               PalmSathi predicts your harvest window, books the right mill slot before FFB spoils, and makes every government subsidy trackable — in real time.
             </p>
 
-            <div className="fade-up-4" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div className="fade-up-4 hero-ctas" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <Link to="/register" className="cta-primary">
                 Start for free →
               </Link>
@@ -210,7 +223,7 @@ export default function Landing() {
               </Link>
             </div>
 
-            <div className="fade-up-4" style={{ display: "flex", gap: "2rem", marginTop: "2.5rem" }}>
+            <div className="fade-up-4 hero-stats" style={{ display: "flex", gap: "2rem", marginTop: "2.5rem", flexWrap: "wrap" }}>
               {[["₹17.8/kg", "Govt minimum price"], ["24-48h", "FFB spoilage window"], ["3 schemes", "NMEO-OP subsidies"]].map(([val, label]) => (
                 <div key={val}>
                   <div style={{ fontFamily: "Poppins,sans-serif", fontWeight: 700, fontSize: "18px", color: "#52B788" }}>{val}</div>
@@ -246,7 +259,7 @@ export default function Landing() {
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "16px", lineHeight: 1.8, maxWidth: "680px", margin: "0 auto 3rem", fontFamily: "Inter,sans-serif" }}>
             Once a Fresh Fruit Bunch is cut, free fatty acid buildup begins immediately. After 36 hours, quality drops sharply. Without real-time coordination between farms and mills, this value is silently lost — every harvest cycle.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+          <div className="problem-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
             {[
               { icon: "🕐", title: "0–12 hours", desc: "Peak freshness. Oil extraction is highest. This is the golden window.", color: "#22c55e" },
               { icon: "⚠️", title: "12–36 hours", desc: "FFA accumulates. Quality grades drop. Mill penalties begin.", color: "#eab308" },
@@ -274,7 +287,7 @@ export default function Landing() {
               Built around the unique constraints of oil palm — the 24-48 hour spoilage window, NMEO-OP scheme rules, and the gap between farm and mill.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.25rem" }}>
+          <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.25rem" }}>
             {FEATURES.map((f) => (
               <div key={f.title} className="feature-card" style={{ background: "white", borderRadius: "16px", border: "1px solid #f3f4f6", padding: "1.75rem" }}>
                 <div style={{ width: "44px", height: "44px", background: f.color, border: `1px solid ${f.border}`, borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", marginBottom: "1rem" }}>
@@ -318,7 +331,7 @@ export default function Landing() {
 
       {/* STATS */}
       <section ref={statsRef} style={{ background: "#0D2818", padding: "5rem 2rem" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", textAlign: "center" }}>
+        <div className="stats-grid" style={{ maxWidth: "900px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", textAlign: "center" }}>
           {[
             { value: farmers.toLocaleString() + "+", label: "Farmers on platform", sub: "across Andhra Pradesh and Telangana" },
             { value: mills + "+", label: "Mills connected", sub: "with real-time slot availability" },

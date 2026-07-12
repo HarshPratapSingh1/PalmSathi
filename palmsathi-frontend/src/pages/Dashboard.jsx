@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Sprout, Building2, Zap, TrendingUp,
-    Plus, CheckCircle, AlertCircle
+    Plus, CheckCircle, AlertCircle, Menu, Palmtree
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -34,6 +34,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [showAddPlot, setShowAddPlot] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const fetchAll = useCallback(async () => {
         try {
@@ -81,12 +82,25 @@ export default function Dashboard() {
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 walletPoints={wallet?.totalPoints || 0}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
             />
 
-            <main className="ml-64 flex-1 p-8">
+            {/* Mobile top bar — only visible below the lg breakpoint */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-forest text-white flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-2">
+                    <Palmtree className="h-5 w-5 text-leaf" />
+                    <span className="font-heading font-bold text-lg">PalmSathi</span>
+                </div>
+                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+                    <Menu className="h-6 w-6" />
+                </button>
+            </div>
+
+            <main className="lg:ml-64 flex-1 p-4 pt-20 lg:p-8 lg:pt-8">
                 {loading ? (
                     <div className="space-y-6">
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
                         </div>
                         <Skeleton className="h-64 rounded-xl" />
@@ -387,7 +401,7 @@ export default function Dashboard() {
 
                         {/* Chatbot Tab — no header, no stats, full height */}
                         {activeTab === "chatbot" && (
-                            <div style={{ margin: "-2rem", height: "100vh" }}>
+                            <div className="-m-4 -mt-20 lg:-m-8 h-screen">
                                 <HinglishChatbot embedded={true} />
                             </div>
                         )}

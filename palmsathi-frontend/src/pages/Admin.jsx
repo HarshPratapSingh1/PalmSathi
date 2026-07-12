@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Palmtree, ShieldCheck, ChevronRight, RefreshCw, ArrowLeft } from "lucide-react";
 
 const ADMIN_SECRET = "palmsathi_admin_2026";
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL;
 
 const STATUS_ORDER = ["applied", "verified", "disbursed"];
 
@@ -149,7 +149,7 @@ export default function Admin() {
                 </Button>
             </div>
 
-            <div className="max-w-5xl mx-auto px-8 py-8 space-y-6">
+            <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-6">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -166,7 +166,7 @@ export default function Admin() {
                 </div>
 
                 {/* Summary cards */}
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                         { label: "Total Claims", value: counts.all, color: "text-forest" },
                         { label: "Pending Review", value: counts.applied, color: "text-amber-600" },
@@ -225,7 +225,7 @@ export default function Admin() {
                             return (
                                 <Card key={claim._id} className="hover:shadow-md transition-shadow">
                                     <CardContent className="p-5">
-                                        <div className="flex items-start justify-between gap-6">
+                                        <div className="flex flex-col md:flex-row items-start justify-between gap-6">
 
                                             {/* Left: claim info */}
                                             <div className="flex-1 space-y-3">
@@ -306,7 +306,7 @@ export default function Admin() {
                                             </div>
 
                                             {/* Right: amount + action */}
-                                            <div className="text-right shrink-0 space-y-3">
+                                            <div className="text-left md:text-right shrink-0 space-y-3 w-full md:w-auto">
                                                 <div>
                                                     <p className="font-heading font-bold text-2xl text-forest">
                                                         ₹{claim.claimedAmount.toLocaleString()}

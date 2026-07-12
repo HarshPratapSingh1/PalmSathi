@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seed/seedMills.js",
+    "seed:mills": "node src/seed/seedMillsOnly.js",
     "test": "node src/tests/matchingEngine.test.mjs"
   },
   "dependencies": {

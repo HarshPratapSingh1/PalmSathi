@@ -4,6 +4,7 @@ import cors from "cors";
 import http from "http";
 import { connectDB } from "./config/db.js";
 import { setupSockets } from "./sockets/index.js";
+import { startCronJobs } from "./services/cronJobs.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import plotRoutes from "./routes/plotRoutes.js";
@@ -41,6 +42,7 @@ setupSockets(httpServer, app);
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
+  startCronJobs();
   httpServer.listen(PORT, () => {
     console.log(`[server] PalmSathi backend running on port ${PORT}`);
   });

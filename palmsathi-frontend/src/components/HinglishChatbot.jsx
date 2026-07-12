@@ -16,32 +16,30 @@ const SUGGESTED_QUESTIONS = [
 
 function ChatUI({ messages, input, setInput, loading, handleSend, bottomRef, height = "500px" }) {
     return (
-        <div className="flex flex-col rounded-xl overflow-hidden border border-border bg-white" style={{ height }}>
-
+        <div className="flex flex-col overflow-hidden border border-border bg-white rounded-xl" style={{ height }}>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
-                {messages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                        {msg.role === "assistant" && (
-                            <div className="w-6 h-6 rounded-full bg-leaf/20 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
-                                🌴
-                            </div>
-                        )}
-                        <div className={`max-w-[75%] px-3 py-2.5 rounded-xl text-sm font-body leading-relaxed ${msg.role === "user"
-                            ? "bg-forest text-white rounded-br-sm"
-                            : "bg-white border border-border text-foreground rounded-bl-sm shadow-sm"
-                            }`}>
-                            {msg.content || (loading && i === messages.length - 1
-                                ? <span className="flex gap-1 items-center py-0.5">
-                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                    <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                                </span>
-                                : ""
-                            )}
+            <div className="flex-1 overflow-y-auto p-4 bg-background min-h-0 space-y-3">                {messages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    {msg.role === "assistant" && (
+                        <div className="w-6 h-6 rounded-full bg-leaf/20 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                            🌴
                         </div>
+                    )}
+                    <div className={`max-w-[75%] px-3 py-2.5 rounded-xl text-sm font-body leading-relaxed ${msg.role === "user"
+                        ? "bg-forest text-white rounded-br-sm"
+                        : "bg-white border border-border text-foreground rounded-bl-sm shadow-sm"
+                        }`}>
+                        {msg.content || (loading && i === messages.length - 1
+                            ? <span className="flex gap-1 items-center py-0.5">
+                                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </span>
+                            : ""
+                        )}
                     </div>
-                ))}
+                </div>
+            ))}
 
                 {/* Suggested questions — only at start */}
                 {messages.length === 1 && (
@@ -166,7 +164,7 @@ export default function HinglishChatbot({ embedded = false }) {
                 loading={loading}
                 handleSend={handleSend}
                 bottomRef={bottomRef}
-                height="calc(100vh - 220px)"
+                height="100%"
             />
         );
     }

@@ -387,7 +387,9 @@ export default function Dashboard() {
 
                         {/* Chatbot Tab — no header, no stats, full height */}
                         {activeTab === "chatbot" && (
-                            <HinglishChatbot embedded={true} />
+                            <div style={{ margin: "-2rem", height: "100vh" }}>
+                                <HinglishChatbot embedded={true} />
+                            </div>
                         )}
 
                     </div>
